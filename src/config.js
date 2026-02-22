@@ -1,7 +1,4 @@
 // ─── config.js ────────────────────────────────────────────────────
-// 所有可自訂的設定都在這裡
-// 想改出題方向、題型規格、主題列表，直接改這個檔案
-
 export const SECTIONS = {
   reading: {
     label: "Reading", emoji: "📖", color: "#3D7A55", bg: "#EEF7F2",
@@ -53,8 +50,6 @@ export const BAND_LABEL = {
   1: "A1 Beginner",
 };
 
-// ─── System Prompt ────────────────────────────────────────────────
-// 想改出題方向，改這裡
 export function buildSystemPrompt(history = []) {
   const used = history.slice(-20).map((h, i) =>
     `${i + 1}. [${h.section}/${h.taskId}] 主題:${h.topic} Band:${h.band}`
@@ -73,25 +68,25 @@ Reading/complete_words:
 - 總共挖空10個單字
 - stimulus 欄位放完整段落（含挖空標記）
 - items 陣列放10個物件，每個：question放該挖空單字的上下文句子，answer放完整單字，options放空陣列[]
-- 挖空單字難度適中（避免 is/a/the/of 等功能詞，也避免生僻字），詞性多樣（名詞/動詞/形容詞/副詞）
+- 挖空單字難度適中（避免 is/a/the/of 等功能詞，也避免生僻字），詞性多樣
 
 Reading/read_daily_life:
-- 生成 3-5 個不同類型的日常文本
-- 文本類型任選：poster/sign/notice/menu/social media post/schedule/email/text message chain/advertisement/news article/form/receipt
-- 短文本(15-50字)配2題，中文本(51-100字)配2-3題，長文本(101-150字)配3題
-- 每個文本的題型涵蓋（從以下挑選）：main purpose、detail comprehension、vocabulary in context、inference、practical information
-- stimulus 放所有文本，用 [Text 1 — Notice] / [Text 2 — Email] 等標記區隔
-- items 放所有題目（題號連續），每題包含 question/options(4個)/answer/explanation(中文)
-- 干擾選項合理但明確錯誤，所有答案可從文本中找到依據
+- 只生成 2 個不同類型的日常文本（不多不少）
+- 文本類型任選：poster/sign/notice/menu/social media post/schedule/email/text message/advertisement/news article/form/receipt
+- 每個文本配 3 題選擇題
+- 題型涵蓋：main purpose、detail comprehension、vocabulary in context、inference、practical information
+- stimulus 放 2 個文本，用 [Text 1 — Notice] / [Text 2 — Email] 等標記區隔
+- items 放全部 6 題（題號連續），每題包含 question/options(4個)/answer/explanation(中文)
+- 所有答案可從文本中找到依據，干擾選項合理但明確錯誤
 
 Reading/academic_text:
-- 生成 3-4 篇學術文章，每篇約 200 字
+- 只生成 1 篇學術文章（不多不少），約 200 字
 - 學科任選：History / Art & Music / Business & Economics / Life Sciences / Physical Sciences / Social Sciences
-- 每篇5題，題型分布：Main idea(1題)、Factual information(1-2題)、Vocabulary in context(1題)、Inference(1題)、Organization/Relationship(0-1題)
-- 文章自成一體，不需背景知識，2-3段，邏輯連貫，適合高中/大學程度
-- stimulus 放所有文章，用 [Passage 1 — 主題] 標記區隔
-- items 放所有題目（題號連續），每題包含 question/options(4個)/answer/explanation(中文)
-- 干擾選項基於文本但含錯誤細節，不可超出文章範圍
+- 固定 5 題，題型：Main idea(1題)、Factual information(2題)、Vocabulary in context(1題)、Inference(1題)
+- 文章自成一體，不需背景知識，2-3段，邏輯連貫
+- stimulus 放文章內容，用 [Passage 1 — 主題] 標記開頭
+- items 放 5 題，每題包含 question/options(4個)/answer/explanation(中文)
+- 干擾選項基於文本但含錯誤細節
 
 Listening/choose_response: [Speaker says:]標記一句話，4選項測pragmatics
 Listening/listen_conversation: 10來回短對話（Student A/B），2題選擇題
