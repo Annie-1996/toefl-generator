@@ -5,6 +5,12 @@ export default async function handler(req, res) {
   
   try {
     // 存一個測試檔案
+   const { put } = require("@vercel/blob");
+
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  
+  try {
     const { url } = await put("test/hello.html", "<h1>Hello from Blob!</h1>", {
       access: "public",
       contentType: "text/html",
