@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         description: "TOEFL 2026 Practice Exam",
-        public: false,
+        public: true,
         files: { [filename]: { content } },
       }),
     });
