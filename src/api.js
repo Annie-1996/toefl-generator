@@ -33,7 +33,7 @@ export async function generateQuestion(systemPrompt, userPrompt) {
 
 // 呼叫後端上傳 HTML 到 GitHub Gist
 export async function uploadGist(filename, htmlContent) {
-  const res = await fetch("/api/upload-gist", {
+  const res = await fetch("/api/upload-exam", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
