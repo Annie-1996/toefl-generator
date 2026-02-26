@@ -5,7 +5,7 @@
 const APP_SECRET = process.env.REACT_APP_SECRET;
 
 // 呼叫後端產生一道題目
-export async function generateQuestion(systemPrompt, userPrompt) {
+export async function generateQuestion(systemPrompt, userPrompt, taskId) {
   const controller = new AbortController();
   const tid = setTimeout(() => controller.abort(), 60000);
 
@@ -28,7 +28,7 @@ export async function generateQuestion(systemPrompt, userPrompt) {
 
   const data = await res.json();
   if (data.error) throw new Error(data.error);
-  return data.question;
+  return { ...data.question, taskId };
 }
 
 // 呼叫後端上傳 HTML 到 GitHub Gist
