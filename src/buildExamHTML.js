@@ -232,6 +232,9 @@ body{font-family:Georgia,'Noto Serif TC',serif;background:#FAF9F6;color:#2c2c2c;
 .score-screen{background:#fff;border-radius:16px;border:2px solid ${cfg.color};padding:36px;text-align:center;display:none}
 .score-screen.show{display:block}
 .score-big{font-size:48px;font-weight:bold;color:${cfg.color};margin:12px 0}
+.review-section{margin-top:32px;text-align:left;border-top:1px solid #eee;padding-top:24px}
+.review-part{margin-bottom:28px}
+.review-part-title{font-size:12px;font-weight:bold;color:${cfg.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
 .footer{text-align:center;color:#ccc;font-size:12px;padding:28px}
 @media(max-width:768px){.split{grid-template-columns:1fr}.sleft{position:static;max-height:none}}
 </style>
@@ -250,18 +253,35 @@ body{font-family:Georgia,'Noto Serif TC',serif;background:#FAF9F6;color:#2c2c2c;
     <div style="font-size:20px;font-weight:bold;color:#1a1a2e;margin-bottom:6px">Reading Complete!</div>
     <div class="score-big" id="sbig">—</div>
     <div style="font-size:13px;color:#888;margin-bottom:20px" id="sdetail"></div>
-    <button onclick="location.reload()" style="padding:10px 28px;background:${cfg.color};color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold">Try Again</button>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button onclick="location.reload()" style="padding:10px 28px;background:#eee;color:#555;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold">Try Again</button>
+      <button onclick="showReview()" id="review-btn" style="padding:10px 28px;background:${cfg.color};color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:bold">查看完整解析 →</button>
+    </div>
+    <div class="review-section hidden" id="review-section">
+    </div>
   </div>`:""}
 </div>
 <div class="footer">TOEFL iBT 2026 新版練習題</div>
 <script>
 const ANSWERS=${answersJSON};
+const QUESTIONS=${JSON.stringify(questions.map(q=>({
+  taskId: q.taskId,
+  items: (q.items||[]).map(item=>({
+    question: item.question||"",
+    answer: item.answer||"",
+    explanation: item.explanation||""
+  })),
+  tips: q.tips||""
+})))};
 let totalQ=0,correctQ=0;
+let userAnswers={};
 
 function selectOpt(el){
   const qi=el.dataset.qi,ii=el.dataset.ii;
   document.querySelectorAll('[data-qi="'+qi+'"][data-ii="'+ii+'"]').forEach(o=>o.classList.remove('selected'));
   el.classList.add('selected');
+  if(!userAnswers[qi]) userAnswers[qi]={};
+  userAnswers[qi][ii]=el.dataset.letter;
 }
 
 function submitPart1(qi){
@@ -271,11 +291,11 @@ function submitPart1(qi){
     totalQ++;
     const userVal=inp.value.trim().toLowerCase();
     const correct=(ans[ii]||"").toLowerCase();
-    if(userVal===correct){correctQ++;inp.classList.add('correct');}
-    else{inp.classList.add('wrong');inp.value=ans[ii]||"";}
+    if(userVal===correct) correctQ++;
     inp.disabled=true;
+    if(!userAnswers[qi]) userAnswers[qi]={};
+    userAnswers[qi][ii]=inp.value.trim();
   });
-  document.getElementById('p1ans-'+qi).classList.remove('hidden');
   document.querySelector('[onclick="submitPart1('+qi+')"]').style.display='none';
   const p2=document.getElementById('part-1');
   if(p2){setTimeout(()=>{p2.classList.remove('hidden');p2.scrollIntoView({behavior:'smooth'});setProgress(2,3);},800);}
@@ -287,12 +307,8 @@ function nextQ(qi,ii){
   const correct=ans[ii];
   totalQ++;
   if(sel&&sel.dataset.letter===correct) correctQ++;
-  document.querySelectorAll('[data-qi="'+qi+'"][data-ii="'+ii+'"]').forEach(opt=>{
-    if(opt.dataset.letter===correct) opt.classList.add('correct');
-    else if(opt.classList.contains('selected')) opt.classList.add('wrong');
-  });
-  const expl=document.getElementById('qe-'+qi+'-'+ii);
-  if(expl) expl.classList.remove('hidden');
+  if(!userAnswers[qi]) userAnswers[qi]={};
+  userAnswers[qi][ii]=sel?sel.dataset.letter:'';
   const curStep=document.getElementById('qs-'+qi+'-'+ii);
   curStep.querySelector('.qnav').style.display='none';
   const nextStep=document.getElementById('qs-'+qi+'-'+(ii+1));
@@ -312,12 +328,8 @@ function submitAll(qi,ii){
   const correct=ans[ii];
   totalQ++;
   if(sel&&sel.dataset.letter===correct) correctQ++;
-  document.querySelectorAll('[data-qi="'+qi+'"][data-ii="'+ii+'"]').forEach(opt=>{
-    if(opt.dataset.letter===correct) opt.classList.add('correct');
-    else if(opt.classList.contains('selected')) opt.classList.add('wrong');
-  });
-  const expl=document.getElementById('qe-'+qi+'-'+ii);
-  if(expl) expl.classList.remove('hidden');
+  if(!userAnswers[qi]) userAnswers[qi]={};
+  userAnswers[qi][ii]=sel?sel.dataset.letter:'';
   document.getElementById('qs-'+qi+'-'+ii).querySelector('.qnav').style.display='none';
   setTimeout(()=>{
     const sc=document.getElementById('sscreen');
@@ -330,6 +342,63 @@ function submitAll(qi,ii){
       setProgress(3,3);
     }
   },600);
+}
+
+function showReview(){
+  const btn=document.getElementById('review-btn');
+  btn.style.display='none';
+  const section=document.getElementById('review-section');
+  section.classList.remove('hidden');
+
+  // 補上 Part 1 inputs 的對錯顏色
+  QUESTIONS.forEach((q,qi)=>{
+    if(q.taskId!=='complete_words') return;
+    const inputs=document.querySelectorAll('.ii[data-qi="'+qi+'"]');
+    const ans=ANSWERS[qi]||[];
+    inputs.forEach((inp,ii)=>{
+      const userVal=(inp.value||'').trim().toLowerCase();
+      const correct=(ans[ii]||'').toLowerCase();
+      if(userVal===correct) inp.classList.add('correct');
+      else{ inp.classList.add('wrong'); inp.value=ans[ii]||''; }
+    });
+    document.getElementById('p1ans-'+qi).classList.remove('hidden');
+  });
+
+  // 補上 Part 2/3 選項的對錯顏色
+  QUESTIONS.forEach((q,qi)=>{
+    if(q.taskId==='complete_words') return;
+    const ans=ANSWERS[qi]||[];
+    ans.forEach((correct,ii)=>{
+      document.querySelectorAll('[data-qi="'+qi+'"][data-ii="'+ii+'"]').forEach(opt=>{
+        if(opt.dataset.letter===correct) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('wrong');
+      });
+      const expl=document.getElementById('qe-'+qi+'-'+ii);
+      if(expl) expl.classList.remove('hidden');
+    });
+  });
+
+  let html='';
+  QUESTIONS.forEach((q,qi)=>{
+    if(!q.items||q.items.length===0) return;
+    const partLabel=q.taskId==='complete_words'?'Part 1 — Complete the Words':q.taskId==='read_daily_life'?'Part 2 — Reading in Daily Life':'Part 3 — Academic Text';
+    html+='<div class="review-part"><div class="review-part-title">'+partLabel+'</div>';
+    q.items.forEach((item,ii)=>{
+      const userAns=userAnswers[qi]?userAnswers[qi][ii]:'—';
+      const correctAns=item.answer?.charAt(0).toUpperCase()||'';
+      const isCorrect=q.taskId==='complete_words'
+        ?(userAns||'').toLowerCase()===(correctAns||'').toLowerCase()
+        :userAns===correctAns;
+      html+='<div style="margin-bottom:16px;padding:14px;background:#fafaf8;border-radius:10px;border:1px solid '+(isCorrect?'#c8e6c9':'#ffcdd2')+'">';
+      html+='<div style="font-size:13px;font-weight:500;color:#1a1a2e;margin-bottom:8px"><span style="color:'+(isCorrect?'#4caf50':'#f44336')+';margin-right:6px">'+(isCorrect?'✓':'✗')+'</span>Q'+(ii+1)+'. '+item.question+'</div>';
+      html+='<div style="font-size:12px;color:#666;margin-bottom:6px">你的答案：<b>'+userAns+'</b> ／ 正確答案：<b style="color:#3D7A55">'+correctAns+'</b></div>';
+      if(item.explanation) html+='<div style="font-size:12px;color:#1565c0;padding:8px 12px;background:#f0f5ff;border-radius:8px">📌 '+item.explanation+'</div>';
+      html+='</div>';
+    });
+    if(q.tips) html+='<div class="tips">🇹🇼 '+q.tips+'</div>';
+    html+='</div>';
+  });
+  section.innerHTML=html;
 }
 
 function setProgress(cur,total){
