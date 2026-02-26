@@ -139,7 +139,7 @@ export default function App() {
     for (let i = 0; i < tasks.length; i++) {
       try {
         const userPrompt = `請出一道2026 TOEFL練習題：\nSection:${section}\nTask:${tasks[i].label}(id:${tasks[i].id})\nTopic:${chosenTopic}\nBand:${band}(${BAND_LABEL[band]})\n嚴格按照${tasks[i].id}格式，內容原創。`;
-        const q = await generateQuestion(systemPrompt, userPrompt);
+        const q = await generateQuestion(systemPrompt, userPrompt, tasks[i].id);
         generated.push(q);
         setQuestions([...generated]);
         setGenProgress({ done: i + 1, total: tasks.length });
