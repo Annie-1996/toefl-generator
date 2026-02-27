@@ -63,12 +63,14 @@ Reading/complete_words:
 - 生成一段 80-120 字的英文段落
 - 第一句完整保留，不挖空
 - 從第二句開始，每隔一個單字挖空（第1、3、5、7、9...個單字）
-- 每個挖空保留前50%字母（向下取整），後半用底線替代，底線數量=缺失字母數
-- 範例：might→mi___ / that→th__ / people→peo___ / complex→comp___
-- 總共挖空10個單字
-- stimulus 欄位放完整段落（含挖空標記）
-- items 陣列放10個物件，每個：question放該挖空單字的上下文句子，answer放完整單字，options放空陣列[]
-- 挖空單字難度適中（避免 is/a/the/of 等功能詞，也避免生僻字），詞性多樣
+- 挖空單字用雙大括號標記完整單字，例如：{{scrutinize}}、{{every}}、{{rigorously}}
+- 不需要自己計算字母數或底線，只需把完整單字放入 {{}}
+- 總共挖空10個單字，段落必須包含剛好10個 {{}} 標記
+- stimulus 欄位放完整段落（含 {{}} 標記），範例：
+  "Students must {{scrutinize}} every {{source}}, {{rigorously}} evaluating its {{credibility}}."
+- items 陣列放10個物件，順序必須與 {{}} 在段落中出現的順序一致
+  每個物件：question放該挖空單字的上下文句子，answer放完整單字，options放空陣列[]
+- 挖空單字難度適中（避免 a/the/of 等功能詞，也避免生僻字），詞性多樣
 
 Reading/read_daily_life:
 - 只生成 2 個不同類型的日常文本（不多不少）
